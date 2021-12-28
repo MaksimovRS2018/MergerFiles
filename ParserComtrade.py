@@ -3,22 +3,24 @@ import matplotlib.pyplot as plt
 
 
 class Parser_comtrade():
-    def __init__(self, path="2", flag="Пуск осциллогр.", time_d=20000 / 24):
+    def __init__(self, path="2", flag="224 Пуск осциллогр.", time_d=20000 / 24):
         self.__path_cfg = path + ".cfg"
         self.__path_dat = path + ".dat"
         self.__data_A = {}
         self.__data_B = {}
-        self.__name_analog = []
-        self.__name_digital = []
-        self.__data_analog = {}
-        self.__data_analog = {}
+        self.name_analog = []
+        self.name_digital = []
+        self.data_analog = {}
         self.__flag = flag
-        self.__time_d = time_d
+        self.time_d = time_d
+        self.end_time = 600000
+        self.index_end_time = -1
         self.__numbers_analog = 0
         self.__numbers_digital = 0
         self.times = list(range(0, 5521667, 683))
         self.matrix_analog = numpy.zeros((1, 1))
         self.matrix_digital = numpy.zeros((1, 1))
+        self.index_time = -1
 
     def pars_cfg(self):
         with open(self.__path_cfg, 'r') as fp:
@@ -26,11 +28,11 @@ class Parser_comtrade():
             self.__numbers_analog = int(data[1].split(",")[1].split("A")[0])
             self.__numbers_digital = int(data[1].split(",")[2].split("D")[0])
             for number_analog in range(self.__numbers_analog):
-                self.__name_analog.append(data[2 + number_analog].split(",")[1])
+                self.name_analog.append(data[2 + number_analog].split(",")[1])
                 self.__data_A[data[2 + number_analog].split(",")[1]] = float(data[2 + number_analog].split(",")[5])
                 self.__data_B[data[2 + number_analog].split(",")[1]] = float(data[2 + number_analog].split(",")[6])
             for number_digital in range(self.__numbers_analog, self.__numbers_analog + self.__numbers_digital):
-                self.__name_digital.append(data[2 + number_digital].split(",")[1])
+                self.name_digital.append(data[2 + number_digital].split(",")[1])
         # print(self.__data_A)
         # print(self.__data_B)
         # print(self.__name_analog)
@@ -40,6 +42,9 @@ class Parser_comtrade():
     def pars_dat(self):
         with open(self.__path_dat, 'r') as fp:
             data = fp.readlines()
+            self.time_d = int(data[1].split(",")[1])
+            self.end_time = int(data[len(data) - 1].split(",")[1])
+            self.index_end_time = int(data[len(data) - 1].split(",")[0])
             # self.matrix_analog = numpy.zeros((len(data), self.__numbers_analog + 1))
             # for t in range(len(data)):
             #     self.matrix_analog[t, 0] = int(data[t].split(",")[1])
@@ -61,12 +66,15 @@ class Parser_comtrade():
         colors = ["-y", "-g", "-r"]
         fig = plt.figure()
         fig.set_size_inches(30, 15)
-        plt.plot(list(range(0, 3000000, 50)), data)
+        plt.plot(list(range(0, self.end_time, self.time_d)), data)
         plt.grid()
         plt.show()
 
     def search_start_time(self):
-        index = self.__name_digital.index(self.__flag) + 1
-        data_flag = list(self.matrix_digital[:,index])
-        index_time = data_flag.index(1)
-        print("Time = ", self.matrix_digital[index_time,0])
+        index = self.name_digital.index(self.__flag) + 1
+        data_flag = list(self.matrix_digital[:, index])
+        self.index_time = data_flag.index(1)
+        # print("Time = ", self.matrix_digital[self.index_time, 0])
+        return self.matrix_digital[self.index_time, 0]
+
+
