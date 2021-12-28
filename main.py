@@ -15,7 +15,9 @@ if __name__ == '__main__':
 
 from ParserComtrade import Parser_comtrade
 
-parser = Parser_comtrade()
+parser = Parser_comtrade(path="2")
+# print(list(range(0,300000,50)))
 parser.pars_cfg()
 parser.pars_dat()
+parser.search_start_time()
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

@@ -1,5 +1,9 @@
+import numpy
+import matplotlib.pyplot as plt
+
+
 class Parser_comtrade():
-    def __init__(self, path="1", flag="start_test", time_d=20000 / 24):
+    def __init__(self, path="2", flag="Пуск осциллогр.", time_d=20000 / 24):
         self.__path_cfg = path + ".cfg"
         self.__path_dat = path + ".dat"
         self.__data_A = {}
@@ -12,6 +16,9 @@ class Parser_comtrade():
         self.__time_d = time_d
         self.__numbers_analog = 0
         self.__numbers_digital = 0
+        self.times = list(range(0, 5521667, 683))
+        self.matrix_analog = numpy.zeros((1, 1))
+        self.matrix_digital = numpy.zeros((1, 1))
 
     def pars_cfg(self):
         with open(self.__path_cfg, 'r') as fp:
@@ -33,16 +40,33 @@ class Parser_comtrade():
     def pars_dat(self):
         with open(self.__path_dat, 'r') as fp:
             data = fp.readlines()
-            # print(len(data))
-            self.__data_analog = dict.fromkeys(self.__name_analog, [])
+            # self.matrix_analog = numpy.zeros((len(data), self.__numbers_analog + 1))
+            # for t in range(len(data)):
+            #     self.matrix_analog[t, 0] = int(data[t].split(",")[1])
+            #     for number_analog in range(self.__numbers_analog):
+            #         a = self.__data_A[self.__name_analog[number_analog]]
+            #         b = self.__data_B[self.__name_analog[number_analog]]
+            #         x = int(data[t].split(",")[2 + number_analog])
+            #         value = a * x + b
+            #         self.matrix_analog[t, number_analog + 1] = value
+            self.matrix_digital = numpy.zeros((len(data), self.__numbers_digital + 1))
             for t in range(len(data)):
-                for number_analog in range(self.__numbers_analog):
-                    a = self.__data_A[self.__name_analog[number_analog]]
-                    b = self.__data_B[self.__name_analog[number_analog]]
-                    x = int(data[t].split(",")[2+number_analog])
-                    value = a*x-b
-                    actual_list = self.__data_analog[self.__name_analog[number_analog]]
-                    actual_list.append(value)
-                    self.__data_analog[self.__name_analog[number_analog]] = actual_list
-        print(self.__data_analog["IBURA1"][0:100])
+                self.matrix_digital[t, 0] = int(data[t].split(",")[1])
+                for number_digital in range(self.__numbers_digital):
+                    self.matrix_digital[t, number_digital + 1] = int(
+                        data[t].split(",")[2 + self.__numbers_analog + number_digital])
         fp.close()
+
+    def plotFig(self, data):
+        colors = ["-y", "-g", "-r"]
+        fig = plt.figure()
+        fig.set_size_inches(30, 15)
+        plt.plot(list(range(0, 3000000, 50)), data)
+        plt.grid()
+        plt.show()
+
+    def search_start_time(self):
+        index = self.__name_digital.index(self.__flag) + 1
+        data_flag = list(self.matrix_digital[:,index])
+        index_time = data_flag.index(1)
+        print("Time = ", self.matrix_digital[index_time,0])
