@@ -14,14 +14,13 @@ if __name__ == '__main__':
     print_hi('PyCharm')
 import shutil
 from ParserComtrade import Parser_comtrade
-from functools import reduce
 
 parser_rtds_comtrade = Parser_comtrade(path="1", flag="start_test", A=False, D=True)
 parser_terminal_comtrade = Parser_comtrade(path="2", flag="224 Пуск осциллогр.", A=True, D=True)
 
 parser_rtds_comtrade.pars_cfg()
 parser_rtds_comtrade.pars_dat()
-t1 = parser_rtds_comtrade.search_start_time()
+t1 = parser_rtds_comtrade.search_start_time() + 11670
 parser_terminal_comtrade.pars_cfg()
 parser_terminal_comtrade.pars_dat()
 t2 = parser_terminal_comtrade.search_start_time()
@@ -44,6 +43,9 @@ while len(list_times_after) < (parser_terminal_comtrade.index_end_time - parser_
 print(len(list_times_after))
 times = (list_times_before + list_times_after)
 times.sort()
+print(times)
+# times = list(map(lambda x: (int(x - 10000 / 50)), times))
+# print(times)
 
 
 # index_times = list(map(lambda x: (int(x / 50)), times))
@@ -60,6 +62,7 @@ def list_to_str(list_data):
     for i in range(len(list_data)):
         string = string + ", " + str(int(list_data[i]))
     return string
+
 
 index_times = list(filter(filter_max, list(map(lambda x: (int(x / 50)), times))))
 print(max(index_times))
